@@ -1,7 +1,7 @@
-const robot = require('robotjs');
+const app = require('express')();
 
-robot.setKeyboardDelay(3000);
-robot.keyTap('1');
-robot.setKeyboardDelay(5000);
-robot.keyTap('2');
-robot.keyTap('3');
+app.post('/record/start', async (req, res) => {
+  console.log('haha');
+});
+
+app.listen(3000);

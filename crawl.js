@@ -29,11 +29,7 @@ const gIDSelector = '//div[contains(@class, "GameItem Win")]/@data-game-id';
     const jsonProp = await rawProp.jsonValue();
     gIDs.push(jsonProp);
 
-    //#region Production
-
     await req(jsonProp);
-
-    //#endregion
   }
 
   try {
@@ -42,21 +38,6 @@ const gIDSelector = '//div[contains(@class, "GameItem Win")]/@data-game-id';
   } catch (error) {
     console.error('Error occurred:', error);
   }
-
-  //   const file = fs.createWriteStream(__dirname + `/replays/${gIDs[0]}.bat`);
-  //   https.get(
-  //     `https://www.op.gg/match/new/batch/id=${gIDs[0]}`,
-  //     async response => {
-  //       response.pipe(file);
-  //       c('write file done');
-  //       try {
-  //         const results = await replace(options);
-  //         c('Replacement results:', results);
-  //       } catch (error) {
-  //         console.error('Error occurred:', error);
-  //       }
-  //     }
-  //   );
 
   await browser.close();
 })();
