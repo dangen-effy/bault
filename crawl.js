@@ -1,61 +1,70 @@
-const puppeteer = require('puppeteer');
-const replace = require('replace-in-file');
-const https = require('https');
-const fs = require('fs');
+const { Datastore } = require('nedb-async-await')
+const puppeteer = require('puppeteer')
+const replace = require('replace-in-file')
+const https = require('https')
+const fs = require('fs')
 
-const { faker, from, to } = require('./config');
+const db = new Datastore({ filename: 'db/data', autoload: true })
+
+const files = __dirname + '/replays'
+
+const { faker, from, to } = require('./config')
 
 const options = {
-  files: __dirname + '/replays/*.bat',
+  files: files + '/*.bat',
   from,
   to
-};
+}
 
-const gIDSelector = '//div[contains(@class, "GameItem Win")]/@data-game-id';
-
-(async () => {
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
+;(async () => {
+  const browser = await puppeteer.launch()
+  const page = await browser.newPage()
   await page.goto(faker, {
     waitUntil: 'domcontentloaded'
-  });
+  })
 
-  const htmls = await page.$x(gIDSelector);
+  const result = await page.$$eval('div.GameItem.Win', ele => {
+    return ele.map(e => {
+      const gId = e.getAttribute('data-game-id')
+      const duration = e.getElementsByClassName('GameLength')[0].innerHTML
 
-  const gIDs = [];
+      return { gId, duration }
+    })
+  })
 
-  for (const document of htmls) {
-    const rawProp = await document.getProperty('value');
-    const jsonProp = await rawProp.jsonValue();
-    gIDs.push(jsonProp);
-
-    await req(jsonProp);
+  if (!fs.existsSync(files)) {
+    fs.mkdirSync(files)
   }
 
-  try {
-    const results = await replace(options);
-    c('Replacement results:', results);
-  } catch (error) {
-    console.error('Error occurred:', error);
+  for (const it of result) {
+    const { gId, duration } = it
+    const result = await db.findOne({ gId: it.gId })
+
+    if (!result) {
+      await db.insert({ gId, recorded: false, duration })
+      await saveReplay(it.gId)
+      await replace(options)
+    } else {
+      console.log(gId, 'Already exist!')
+    }
   }
 
-  await browser.close();
-})();
+  await browser.close()
+})()
 
-const c = console.log;
-
-function req(name) {
+function saveReplay (name) {
   return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(__dirname + `/replays/${name}.bat`);
-    const req = https.get(`https://www.op.gg/match/new/batch/id=${name}`);
+    console.log('Saved!')
+    const file = fs.createWriteStream(__dirname + `/replays/${name}.bat`)
+    const req = https.get(`https://www.op.gg/match/new/batch/id=${name}`)
 
     req.on('response', res => {
-      res.pipe(file);
-      resolve(res);
-    });
+      res.pipe(file)
+      resolve(res)
+    })
 
     req.on('error', err => {
-      reject(err);
-    });
-  });
+      reject(err)
+    })
+  })
 }
