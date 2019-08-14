@@ -1,5 +1,9 @@
 # bault
 
+<p align="center"> 
+  <img src="bault.png">
+</p>
+
 ## 소개
 
 자동으로 리그오브레전트 프로게이머의 플레이를 녹화하고 유튜브에 업로드해서 🛌 자면서도 💵 수익을 남기자.
@@ -17,3 +21,4 @@
 [express](https://www.npmjs.com/package/express)
 
 [puppeteer](https://github.com/GoogleChrome/puppeteer)
+
