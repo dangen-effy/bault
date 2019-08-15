@@ -3,10 +3,9 @@ const puppeteer = require('puppeteer')
 const replace = require('replace-in-file')
 const https = require('https')
 const fs = require('fs')
-
+const path = require('path')
 const db = new Datastore({ filename: 'db/data', autoload: true })
-
-const files = __dirname + '/replays'
+const files = path.join(__dirname, '/replays')
 
 const { faker, from, to } = require('./config')
 
@@ -55,7 +54,7 @@ const options = {
 function saveReplay (name) {
   return new Promise((resolve, reject) => {
     console.log('Saved!')
-    const file = fs.createWriteStream(__dirname + `/replays/${name}.bat`)
+    const file = fs.createWriteStream(path.join(__dirname, `/replays/${name}.bat`))
     const req = https.get(`https://www.op.gg/match/new/batch/id=${name}`)
 
     req.on('response', res => {
