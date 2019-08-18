@@ -7,12 +7,18 @@ const path = require('path')
 const db = new Datastore({ filename: 'db/data', autoload: true })
 const files = path.join(__dirname, '/replays')
 
-const { faker, from, to } = require('./config')
+const { faker, replacer } = require('./config')
 
-const options = {
+const radsOptions = {
   files: files + '/*.bat',
-  from,
-  to
+  from: replacer.radsFrom,
+  to: replacer.radsTo
+}
+
+const localeOption = {
+  files: files + '/*.bat',
+  from: replacer.localeFrom,
+  to: replacer.localeTo
 }
 
 ;(async () => {
@@ -42,7 +48,8 @@ const options = {
     if (!result) {
       await db.insert({ gId, recorded: false, duration })
       await saveReplay(it.gId)
-      await replace(options)
+      await replace(radsOptions)
+      await replace(localeOption)
     } else {
       console.log(gId, 'Already exist!')
     }

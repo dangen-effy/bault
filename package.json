@@ -8,8 +8,10 @@
     "eslint-config-standard": "^13.0.1",
     "express": "^4.17.1",
     "js-file-download": "^0.4.7",
+    "lodash": "^4.17.15",
     "nedb": "^1.8.0",
     "nedb-async-await": "^0.1.2",
+    "process-list": "^1.2.3",
     "puppeteer": "^1.19.0",
     "replace-in-file": "^4.1.1",
     "robotjs": "^0.5.1"
