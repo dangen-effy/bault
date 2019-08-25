@@ -1,20 +1,13 @@
-const concat = require("ffmpeg-concat");
+const shell = require('shelljs')
 
-(async () => {
-  await concatenate("./sample1.mp4", "./sample2.mp4");
-})();
-
-async function concatenate(...videos) {
-  await concat({
-    videos,
-    output: "haha.mp4",
-    transition: {
-      name: "directionalWipe",
-      duration: 500
-    }
-  });
+function concat (...videos) {
+  if (shell.exec(`ffmpeg -loglevel error -i "concat:${videos.join('|')}" -codec copy result.ts`).code !== 0) {
+    console.error('[ffmpeg] Error on ffmpeg concat', videos)
+  } else {
+    console.log('[ffmpeg] concat done', videos)
+  }
 }
 
 module.exports = {
-  concatenate
-};
+  concat
+}
