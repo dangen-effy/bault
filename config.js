@@ -1,5 +1,5 @@
 module.exports = {
-  faker: 'https://www.op.gg/summoner/userName=Hide+on+bush',
+  faker: 'https://www.op.gg/summoner/userName=SKT+T1+Kaan',
   replacer: {
     radsFrom: /set RADS_PATH="C:\\Riot Games\\League of Legends"/g,
     radsTo: `SET RADS_PATH=C:\\Riot Games\\League of Legends`,

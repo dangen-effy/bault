@@ -19,11 +19,11 @@ app.post('/record/start', async (req, res, next) => {
     const batchPath = path.join(__dirname, `/replays/${gId}.bat`)
 
     console.log('[Exec]', batchPath)
-    console.log('[Record-Start]', gId, 20, now())
+    console.log('[Record-Start]', gId, ms, now())
 
     tap('f7')
 
-    setTimeout(stop, 20000, replay.gId)
+    setTimeout(stop, ms, replay.gId)
 
     exec(batchPath, err => {
       if (err) {
@@ -41,7 +41,7 @@ app.post('/record/start', async (req, res, next) => {
   }
 })
 
-app.use((err, req, res, next) => {
+app.use((err, _, res, __) => {
   console.error(err.stack)
   res.status(500).send({ err })
 })
