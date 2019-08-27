@@ -7,6 +7,8 @@ const { exec } = require('child_process')
 const db = new Datastore({ filename: 'db/data', autoload: true })
 const killer = require('./killer')
 
+const setupTime = 1000 * 30
+
 app.post('/record/start', async (req, res, next) => {
   // TODO: 리플레이 다 떨어졌을때 자동 크롤링해서 데이터 갱신
   try {
@@ -14,6 +16,7 @@ app.post('/record/start', async (req, res, next) => {
     const [replay] = replays
     const { gId, duration } = replay
     const ms = getDurationAsMilli(duration)
+
     req.setTimeout(ms + 1000 * 60)
 
     const batchPath = path.join(__dirname, `/replays/${gId}.bat`)
@@ -21,8 +24,7 @@ app.post('/record/start', async (req, res, next) => {
     console.log('[Exec]', batchPath)
     console.log('[Record-Start]', gId, ms, now())
 
-    tap('f7')
-
+    setTimeout(() => { tap('f7') }, setupTime)
     setTimeout(stop, ms, replay.gId)
 
     exec(batchPath, err => {
@@ -34,7 +36,10 @@ app.post('/record/start', async (req, res, next) => {
 
       // TODO: 유튜브 업로드
       // TODO: 다음 태스크 진행은 에이전트가 하는걸로
-      return res.send({ done: true, msg: `${gId} ${duration} ${ms} Record Start` })
+      return res.send({
+        done: true,
+        msg: `${gId} ${duration} ${ms} Record Start`
+      })
     })
   } catch (e) {
     next(e)
@@ -69,7 +74,7 @@ function exit () {
 }
 
 function getDurationAsMilli (duration) {
-  const [mm, ss] = _.map(duration.split(' '), (x) => {
+  const [mm, ss] = _.map(duration.split(' '), x => {
     return x.slice(0, -1)
   })
 
@@ -84,6 +89,7 @@ function now () {
 }
 
 function tap (key) {
+  console.log('[Input]', key, now())
   robot.keyToggle(key, 'down')
   robot.keyToggle(key, 'up')
   robot.keyToggle(key, 'down')
