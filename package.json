@@ -22,6 +22,8 @@
     "standard": "^13.1.0"
   },
   "scripts": {
+    "start": "set NODE_ENV=production && node index.js",
+    "debug": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "standard --fix ./**/*.js"
   },

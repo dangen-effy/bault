@@ -4,7 +4,7 @@ const replace = require('replace-in-file')
 const https = require('https')
 const fs = require('fs')
 const path = require('path')
-const db = new Datastore({ filename: 'db/data', autoload: true })
+const Replay = new Datastore({ filename: 'db/replays', autoload: true })
 const files = path.join(__dirname, '/replays')
 
 const { faker, replacer } = require('./config')
@@ -43,10 +43,10 @@ const localeOption = {
 
   for (const it of result) {
     const { gId, duration } = it
-    const result = await db.findOne({ gId: it.gId })
+    const result = await Replay.findOne({ gId: it.gId })
 
     if (!result) {
-      await db.insert({ gId, recorded: false, duration })
+      await Replay.insert({ gId, recorded: false, duration })
       await saveReplay(it.gId)
       await replace(radsOptions)
       await replace(localeOption)

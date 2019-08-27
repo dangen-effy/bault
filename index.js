@@ -2,17 +2,18 @@ const _ = require('lodash')
 const path = require('path')
 const app = require('express')()
 const robot = require('robotjs')
-const { Datastore } = require('nedb-async-await')
-const { exec } = require('child_process')
-const db = new Datastore({ filename: 'db/data', autoload: true })
 const killer = require('./killer')
+const { exec } = require('child_process')
+const { Datastore } = require('nedb-async-await')
+const { NODE_ENV } = process.env
+const Replay = new Datastore({ filename: 'db/replays', autoload: true })
 
-const setupTime = 1000 * 30
+require('./watcher')
 
 app.post('/record/start', async (req, res, next) => {
   // TODO: 리플레이 다 떨어졌을때 자동 크롤링해서 데이터 갱신
   try {
-    const replays = await db.find({ recorded: false })
+    const replays = await Replay.find({ recorded: false })
     const [replay] = replays
     const { gId, duration } = replay
     const ms = getDurationAsMilli(duration)
@@ -24,13 +25,14 @@ app.post('/record/start', async (req, res, next) => {
     console.log('[Exec]', batchPath)
     console.log('[Record-Start]', gId, ms, now())
 
-    setTimeout(() => { tap('f7') }, setupTime)
-    setTimeout(stop, ms, replay.gId)
+    setTimeout(() => { tap('f7') }, 1000 * 30)
+    setTimeout(stop, ms - 1000 * 10, replay.gId)
 
     exec(batchPath, err => {
       if (err) {
         throw err
       }
+
       console.log('[Kill]', batchPath)
       tap('f8')
 
@@ -38,7 +40,7 @@ app.post('/record/start', async (req, res, next) => {
       // TODO: 다음 태스크 진행은 에이전트가 하는걸로
       return res.send({
         done: true,
-        msg: `${gId} ${duration} ${ms} Record Start`
+        video: { gId, duration }
       })
     })
   } catch (e) {
@@ -60,7 +62,7 @@ process.on('uncaughtException', exit)
 
 async function stop (gId) {
   try {
-    db.update({ gId }, { $set: { recorded: true } }, {})
+    Replay.update({ gId }, { $set: { recorded: true } }, {})
     console.log('[Record-Done]', gId, now())
     killer()
   } finally {
@@ -74,6 +76,8 @@ function exit () {
 }
 
 function getDurationAsMilli (duration) {
+  if (!NODE_ENV) return 1000 * 60
+
   const [mm, ss] = _.map(duration.split(' '), x => {
     return x.slice(0, -1)
   })
@@ -89,7 +93,7 @@ function now () {
 }
 
 function tap (key) {
-  console.log('[Input]', key, now())
+  console.log('[Keyboard]', key, now())
   robot.keyToggle(key, 'down')
   robot.keyToggle(key, 'up')
   robot.keyToggle(key, 'down')
