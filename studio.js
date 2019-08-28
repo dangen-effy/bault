@@ -1,8 +1,14 @@
-const shell = require('shelljs')
-const _ = require('lodash')
+/**
+ * `studio` 는 `ffmpeg` 을 사용해 비디오를 직접 편집합니다.
+ */
 
+const _ = require('lodash')
 const fs = require('fs')
-var resultPath = 'videos/results/'
+const shell = require('shelljs')
+
+require('colors')
+
+const resultPath = 'videos/results/'
 
 fs.existsSync(resultPath) || fs.mkdirSync(resultPath)
 
@@ -18,11 +24,10 @@ function concat ({ intro, outro }, ...videos) {
 
   const concat = `${intro || ''}${joinnedVideo}${outro || ''}`
 
-  // TODO: 앞에 무조건 videos 붙이면 폴더 구조에 제약 생김
   if (shell.exec(`ffmpeg -loglevel error -i "concat:${concat}" -codec copy ${resultPath}${_.last(videos)}`).code !== 0) {
-    console.error('[Studio] Error on ffmpeg concat', concat)
+    console.error('[Studio] Error on ffmpeg concat'.red, concat.yellow)
   } else {
-    console.log('[Studio] concat done', concat)
+    console.log('[Studio] concat done'.green, concat.yellow)
   }
 }
 

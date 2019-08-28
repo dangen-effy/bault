@@ -1,11 +1,12 @@
-const { Datastore } = require('nedb-async-await')
-const puppeteer = require('puppeteer')
-const replace = require('replace-in-file')
-const https = require('https')
 const fs = require('fs')
 const path = require('path')
-const Replay = new Datastore({ filename: 'db/replays', autoload: true })
+const https = require('https')
+const puppeteer = require('puppeteer')
+const replace = require('replace-in-file')
 const files = path.join(__dirname, '/replays')
+
+const { Datastore } = require('nedb-async-await')
+const Replay = new Datastore({ filename: 'db/replays', autoload: true })
 
 const { faker, replacer } = require('./config')
 
@@ -51,7 +52,7 @@ const localeOption = {
       await replace(radsOptions)
       await replace(localeOption)
     } else {
-      console.log(gId, 'Already exist!')
+      console.log(gId.yellow, 'Already exist!'.red)
     }
   }
 
@@ -60,7 +61,7 @@ const localeOption = {
 
 function saveReplay (name) {
   return new Promise((resolve, reject) => {
-    console.log('Saved!')
+    console.log('Saved!'.cyan)
     const file = fs.createWriteStream(path.join(__dirname, `/replays/${name}.bat`))
     const req = https.get(`https://www.op.gg/match/new/batch/id=${name}`)
 

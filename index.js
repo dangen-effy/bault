@@ -22,8 +22,8 @@ app.post('/record/start', async (req, res, next) => {
 
     const batchPath = path.join(__dirname, `/replays/${gId}.bat`)
 
-    console.log('[Exec]', batchPath)
-    console.log('[Record-Start]', gId, ms, now())
+    console.log('[Exec]', batchPath.yellow)
+    console.log('[Record-Start]'.magenta, gId, ms, now())
 
     setTimeout(() => { tap('f7') }, 1000 * 30)
     setTimeout(stop, ms - 1000 * 10, replay.gId)
@@ -33,7 +33,7 @@ app.post('/record/start', async (req, res, next) => {
         throw err
       }
 
-      console.log('[Kill]', batchPath)
+      console.log('[Exit]'.magenta, batchPath.yellow)
       tap('f8')
 
       // TODO: 유튜브 업로드
@@ -63,7 +63,7 @@ process.on('uncaughtException', exit)
 async function stop (gId) {
   try {
     Replay.update({ gId }, { $set: { recorded: true } }, {})
-    console.log('[Record-Done]', gId, now())
+    console.log('[Record-Done]'.magenta, gId, now())
     killer()
   } finally {
     tap('f8')
@@ -93,7 +93,7 @@ function now () {
 }
 
 function tap (key) {
-  console.log('[Keyboard]', key, now())
+  console.log('[Keyboard]'.gray, key, now())
   robot.keyToggle(key, 'down')
   robot.keyToggle(key, 'up')
   robot.keyToggle(key, 'down')
