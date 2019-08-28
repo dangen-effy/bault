@@ -36,12 +36,7 @@ app.post('/record/start', async (req, res, next) => {
       console.log('[Exit]'.magenta, batchPath.yellow)
       tap('f8')
 
-      // TODO: 유튜브 업로드
-      // TODO: 다음 태스크 진행은 에이전트가 하는걸로
-      return res.send({
-        done: true,
-        video: { gId, duration }
-      })
+      return res.send({ done: true, video: { gId, duration } })
     })
   } catch (e) {
     next(e)
@@ -53,7 +48,7 @@ app.use((err, _, res, __) => {
   res.status(500).send({ err })
 })
 
-app.listen(3000, () => { console.log('🚀') })
+app.listen(3000, () => { console.log('🚀 ', new Date()) })
 
 process.on('SIGINT', exit)
 process.on('SIGUSR1', exit)

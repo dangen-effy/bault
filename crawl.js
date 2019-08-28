@@ -62,7 +62,9 @@ const localeOption = {
 function saveReplay (name) {
   return new Promise((resolve, reject) => {
     console.log('Saved!'.cyan)
-    const file = fs.createWriteStream(path.join(__dirname, `/replays/${name}.bat`))
+    const file = fs.createWriteStream(
+      path.join(__dirname, `/replays/${name}.bat`)
+    )
     const req = https.get(`https://www.op.gg/match/new/batch/id=${name}`)
 
     req.on('response', res => {
