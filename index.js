@@ -7,6 +7,7 @@ const { exec } = require('child_process')
 const { Datastore } = require('nedb-async-await')
 const { NODE_ENV } = process.env
 const Replay = new Datastore({ filename: 'db/replays', autoload: true })
+const Second = 1000
 
 require('./watcher')
 
@@ -16,17 +17,17 @@ app.post('/record/start', async (req, res, next) => {
     const replays = await Replay.find({ recorded: false })
     const [replay] = replays
     const { gId, duration } = replay
-    const ms = getDurationAsMilli(duration)
+    const gameTime = getDurationAsMilli(duration)
 
-    req.setTimeout(ms + 1000 * 60)
+    req.setTimeout(gameTime + 60 * Second)
 
     const batchPath = path.join(__dirname, `/replays/${gId}.bat`)
 
     console.log('[Exec]', batchPath.yellow)
-    console.log('[Record-Start]'.magenta, gId, ms, now())
+    console.log('[Record-Start]'.magenta, gId, gameTime, now())
 
-    setTimeout(() => { tap('f7') }, 1000 * 30)
-    setTimeout(stop, ms - 1000 * 10, replay.gId)
+    setTimeout(start, 30 * Second)
+    setTimeout(stop, gameTime - 10 * Second, replay.gId)
 
     exec(batchPath, err => {
       if (err) {
@@ -48,12 +49,16 @@ app.use((err, _, res, __) => {
   res.status(500).send({ err })
 })
 
-app.listen(3000, () => { console.log('🚀 ', new Date()) })
+app.listen(3000, () => { console.log('🚀 ', now()) })
 
 process.on('SIGINT', exit)
 process.on('SIGUSR1', exit)
 process.on('SIGUSR2', exit)
 process.on('uncaughtException', exit)
+
+async function start () {
+  tap('f7')
+}
 
 async function stop (gId) {
   try {
@@ -71,14 +76,14 @@ function exit () {
 }
 
 function getDurationAsMilli (duration) {
-  if (!NODE_ENV) return 1000 * 60
+  if (!NODE_ENV) return 60 * Second
 
   const [mm, ss] = _.map(duration.split(' '), x => {
     return x.slice(0, -1)
   })
 
-  const m = mm * 60 * 1000
-  const s = ss * 1000
+  const m = mm * 60 * Second
+  const s = ss * Second
 
   return m + s
 }
