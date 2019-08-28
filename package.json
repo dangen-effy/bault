@@ -17,7 +17,7 @@
     "puppeteer": "^1.19.0",
     "replace-in-file": "^4.1.1",
     "robotjs": "^0.5.1",
-    "shelljs": "^0.8.3",
+    "shelljs": "^0.8.3"
   },
   "devDependencies": {
     "eslint-config-standard": "^13.0.1",
