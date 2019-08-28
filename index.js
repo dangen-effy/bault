@@ -53,7 +53,7 @@ app.use((err, _, res, __) => {
   res.status(500).send({ err })
 })
 
-app.listen(3000)
+app.listen(3000, () => { console.log('🚀') })
 
 process.on('SIGINT', exit)
 process.on('SIGUSR1', exit)
