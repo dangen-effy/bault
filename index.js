@@ -12,13 +12,12 @@ const { NODE_ENV } = process.env
 const Replay = new Datastore({ filename: 'db/replays', autoload: true })
 const Second = 1000
 const app = express()
-
-app.use(express.json())
+const uploader = client()
 
 require('./watcher')
 require('colors')
 
-const uploader = client()
+app.use(express.json())
 
 app.get('/oauth2callback', async (req, res, next) => {
   try {
@@ -49,10 +48,13 @@ app.post('/record/start', async (req, res, next) => {
 
     if (req.body.gId) {
       const { gId } = req.body
+
       replays = await Replay.find({ recorded: false, gId })
     } else {
       replays = await Replay.find({ recorded: false })
     }
+
+    if (!replays.length) { throw new Error('No replays left') }
 
     const [replay] = replays
     const { gId, duration } = replay
@@ -77,16 +79,17 @@ app.post('/record/start', async (req, res, next) => {
       console.log('[Exit]'.magenta, batchPath.yellow)
       tap('f8')
 
-      return res.send({ done: true, video: { gId, duration } })
+      return res.send({ gId, duration })
     })
   } catch (e) {
     next(e)
   }
 })
 
-app.use((err, _, res, __) => {
-  console.error(err.stack)
-  res.status(500).send({ err })
+app.use((error, _, res, __) => {
+  console.error(error.stack)
+
+  res.status(500).send({ error: error.message || 'An error occured' })
 })
 
 app.listen(3000, () => { console.log('🚀 ', now()) })
@@ -134,16 +137,9 @@ function now () {
 
 function tap (key) {
   console.log('[Keyboard]'.gray, key, now())
-  robot.keyToggle(key, 'down')
-  robot.keyToggle(key, 'up')
-  robot.keyToggle(key, 'down')
-  robot.keyToggle(key, 'up')
-  robot.keyToggle(key, 'down')
-  robot.keyToggle(key, 'up')
-  robot.keyToggle(key, 'down')
-  robot.keyToggle(key, 'up')
-  robot.keyToggle(key, 'down')
-  robot.keyToggle(key, 'up')
-  robot.keyToggle(key, 'down')
-  robot.keyToggle(key, 'up')
+
+  _.times(6, () => {
+    robot.keyToggle(key, 'down')
+    robot.keyToggle(key, 'up')
+  })
 }
