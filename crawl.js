@@ -30,6 +30,11 @@ const localeOption = {
 
   await Promise.all(_.map(players, async (url, player) => {
     const page = await browser.newPage()
+
+    page.setCacheEnabled(false)
+
+    page.on('console', consoleObj => console.log(consoleObj.text()))
+
     await page.goto(url, {
       waitUntil: 'domcontentloaded'
     })
@@ -41,27 +46,35 @@ const localeOption = {
 })()
 
 async function crawl (page, player) {
-  const result = await page.$$eval('div.GameItem.Win', ele => {
-    return ele.slice(5).map(e => {
-      const gId = e.getAttribute('data-game-id')
-      const duration = e.getElementsByClassName('GameLength')[0].innerHTML
-      return { gId, duration }
-    })
-  })
-
   fs.existsSync(files) || fs.mkdirSync(files)
 
-  await Promise.all(_.map(result.slice(0, 3), async (it) => {
-    const { gId, duration } = it
-    const result = await Replay.findOne({ gId: it.gId })
-    if (!result) {
-      await Replay.insert({ gId, recorded: false, duration, player })
-      await saveReplay(it.gId)
-      await replace(radsOptions)
-      await replace(localeOption)
-    } else {
-      console.log(gId.yellow, 'Already exist!'.red)
+  const replays = await page.$$eval('div.GameItem.Win', ele => {
+    return ele.map(e => {
+      const gId = e.getAttribute('data-game-id')
+      const duration = e.getElementsByClassName('GameLength')[0].innerHTML
+      const timeAgo = e.getElementsByClassName('_timeago')[0].innerHTML
+
+      if (timeAgo.includes('days') && parseInt(timeAgo) > 2) {
+        return
+      }
+
+      return { gId, duration }
+    }).filter(exist => exist)
+  })
+
+  await Promise.all(_.map(replays, async (replay) => {
+    const { gId, duration } = replay
+    const exist = await Replay.findOne({ gId })
+
+    if (exist) {
+      console.warn(gId.yellow, 'Already exist!'.red)
+      return
     }
+
+    await Replay.insert({ gId, duration, player, recorded: false })
+    await saveReplay(gId)
+    await replace(radsOptions)
+    await replace(localeOption)
   }))
 }
 
