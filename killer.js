@@ -6,9 +6,22 @@ const _ = require('lodash')
 
 const { snapshot } = require('process-list')
 
-module.exports = () => {
+function kill (processName = 'League of Legends.exe') {
   snapshot('pid', 'name').then(tasks => {
-    const { pid } = _.filter(tasks, (o) => { return o.name === 'League of Legends.exe' }).pop()
+    const { pid } = _.filter(tasks, (o) => { return o.name === processName }).pop()
+
     process.kill(pid, 'SIGINT')
   })
+}
+
+async function processCheck (processName = 'obs64.exe') {
+  const tasks = await snapshot('pid', 'name')
+
+  if (!_.some(tasks, (o) => { return o.name === processName })) {
+    throw new Error(`No ${processName} running`)
+  }
+}
+
+module.exports = {
+  kill, processCheck
 }

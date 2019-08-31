@@ -3,12 +3,16 @@
  */
 
 const axios = require('axios')
+const { processCheck } = require('./killer')
+
 require('colors')
 
 req()
 
 async function req () {
   try {
+    await processCheck()
+
     const { data } = await axios.post('http://localhost:3000/record/start', { gId: process.argv[2] })
 
     console.log('[Response]'.green, data)

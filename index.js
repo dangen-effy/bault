@@ -2,7 +2,7 @@ const _ = require('lodash')
 const path = require('path')
 const express = require('express')
 const robot = require('robotjs')
-const killer = require('./killer')
+const { kill } = require('./killer')
 
 const { client } = require('./youtube')
 const { exec } = require('child_process')
@@ -105,9 +105,11 @@ async function start () {
 
 async function stop (gId) {
   try {
-    Replay.update({ gId }, { $set: { recorded: true } }, {})
+    await Replay.update({ gId }, { $set: { recorded: true } }, {})
+
     console.log('[Record-Done]'.magenta, gId, now())
-    killer()
+
+    kill()
   } finally {
     tap('f8')
   }
