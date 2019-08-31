@@ -9,7 +9,8 @@ req()
 
 async function req () {
   try {
-    const { data } = await axios.post('http://localhost:3000/record/start')
+    const { data } = await axios.post('http://localhost:3000/record/start', { gId: process.argv[2] })
+
     console.log('[Response]'.green, data)
 
     await req()

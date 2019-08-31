@@ -1,22 +1,62 @@
 const _ = require('lodash')
 const path = require('path')
-const app = require('express')()
+const express = require('express')
 const robot = require('robotjs')
 const killer = require('./killer')
+
+const { client } = require('./youtube')
 const { exec } = require('child_process')
 const { Datastore } = require('nedb-async-await')
 const { NODE_ENV } = process.env
+
 const Replay = new Datastore({ filename: 'db/replays', autoload: true })
 const Second = 1000
+const app = express()
+
+app.use(express.json())
 
 require('./watcher')
+require('colors')
+
+const uploader = client()
+
+app.get('/oauth2callback', async (req, res, next) => {
+  try {
+    const { code } = req.query
+    const { tokens } = await uploader.oauthClient.getToken(code)
+
+    uploader.oauthClient.credentials = tokens
+
+    await uploader.upload('sample.ts')
+
+    res.send('Uploaded1')
+  } catch (e) {
+    next(e)
+  }
+})
+
+app.get('/upload', async (req, res, next) => {
+  try {
+    await uploader.authenticate()
+  } catch (e) {
+    next(e)
+  }
+})
 
 app.post('/record/start', async (req, res, next) => {
-  // TODO: 리플레이 다 떨어졌을때 자동 크롤링해서 데이터 갱신
   try {
-    const replays = await Replay.find({ recorded: false })
+    let replays
+
+    if (req.body.gId) {
+      const { gId } = req.body
+      replays = await Replay.find({ recorded: false, gId })
+    } else {
+      replays = await Replay.find({ recorded: false })
+    }
+
     const [replay] = replays
     const { gId, duration } = replay
+
     const gameTime = getDurationAsMilli(duration)
 
     req.setTimeout(gameTime + 60 * Second)
